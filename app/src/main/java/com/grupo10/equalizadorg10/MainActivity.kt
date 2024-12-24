@@ -11,16 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -79,21 +76,29 @@ fun EqualizadorMainScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        ElevatedButton(onClick ={/* TODO: implement profile screen */ }){
-            Text(text = "Profile 1")
-        }
-        ElevatedButton(onClick ={/* TODO: implement profile screen */ }){
-            Text(text = "Profile 2")
-        }
+        AccessProfileButton("Profile 1")
+        AccessProfileButton("Profile 2")
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        FilledTonalButton(onClick ={/* TODO: implement profile screen */ }){
-            Text(text = "Add new profile")
-        }
+        AddProfileButton()
 
     }
 
+}
+
+@Composable
+private fun AccessProfileButton( profileName: String) {
+    ElevatedButton(onClick = {/* TODO: implement profile screen */ }) {
+        Text(text = profileName)
+    }
+}
+
+@Composable
+private fun AddProfileButton() {
+    FilledTonalButton(onClick = {/* TODO: implement profile screen */ }) {
+        Text(text = "Add new profile")
+    }
 }
 
 @Preview(showBackground = true)
