@@ -45,7 +45,11 @@ fun EqualizadorApp() {
         }
         composable("profile_screen/{profileName}") { backStackEntry ->
             val profileName = backStackEntry.arguments?.getString("profileName") ?: "Unknown"
-            ProfileScreen(profileName)
+            ProfileScreen(
+                profileName,
+                navController = navController,
+                modifier = Modifier
+            )
         }
     }
 }

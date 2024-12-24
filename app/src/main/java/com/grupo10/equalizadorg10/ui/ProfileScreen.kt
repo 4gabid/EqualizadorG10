@@ -41,13 +41,16 @@ import com.grupo10.equalizadorg10.R
 import com.grupo10.equalizadorg10.ui.theme.EqualizadorG10Theme
 
 import androidx.compose.material3.*
-
-
-import androidx.compose.material3.*
+import android.content.Context
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.grupo10.equalizadorg10.EqualizadorMainScreen
 
 @Composable
 fun VolumeSlider() {
@@ -106,42 +109,81 @@ fun FrequenciaSlider(faixa: String) {
     }
 }
 
+
+
 @Composable
-fun ProfileScreen(profileName:String, modifier: Modifier = Modifier) {
+fun ProfileScreen(profileName: String, navController: NavController, modifier: Modifier = Modifier ) {
+    val context = LocalContext.current
+    val sharedPreferences = remember {
+        context.getSharedPreferences("profile_prefs", Context.MODE_PRIVATE)
+    }
+    var editableName by remember { mutableStateOf(profileName) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
-            .verticalScroll(rememberScrollState()), // Torna a coluna rolável
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text( text="Equalizador",
-            fontSize = 20.sp
+
+        Text(text = "Equalizador")
+        TextField(
+            value = editableName,
+            onValueChange = { editableName = it },
+            label = { Text("Profile Name") },
+            modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(30.dp))
-        Text( text=profileName,
-            fontSize = 35.sp
-        )
+        Spacer(modifier = Modifier.height(16.dp))
+
         Spacer(modifier = Modifier.height(16.dp))
         VolumeSlider()
         FrequenciaSlider(faixa = "Bass")
         FrequenciaSlider(faixa = "Middle")
         FrequenciaSlider(faixa = "Treble")
+        Spacer(modifier = Modifier.height(16.dp))
 
-        FilledTonalButton(onClick ={/* TODO: implement profile screen */ }){
-            Text(text = "Ok")
+        FilledTonalButton(
+            onClick = {
+
+                sharedPreferences.edit()
+                    .putString("profile_name", editableName)
+                    .apply()
+            }
+        ) {
+            Text(text = "Save changes")
         }
+
+        ElevatedButton(
+            onClick = {
+                navController.navigate("main_screen") {
+                    popUpTo("main_screen") { inclusive = true } // Remove a tela atual da pilha de navegação
+                }
+            }
+        ) {
+            Text(text = "Choose other profile")
     }
-}
+}}
+
+
 
 @Preview(showBackground = true)
 @Composable
-fun OpenProfileScreen() {
+fun PreviewOpenProfileScreen() {
     EqualizadorG10Theme {
-        ProfileScreen(profileName= "Profile 1" , modifier= Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.Center)
+        val dummyNavController = rememberNavController()
+        ProfileScreen(
+            profileName = "Profile 1",
+            navController = dummyNavController,
+            modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center)
         )
+
     }
 }
+
+
+
+
