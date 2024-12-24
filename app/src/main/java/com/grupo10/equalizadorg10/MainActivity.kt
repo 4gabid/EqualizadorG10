@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -73,18 +74,34 @@ fun EqualizadorMainScreen(modifier: Modifier = Modifier) {
                 .align(alignment = Alignment.CenterHorizontally)
 
         )
+        val profiles = listOf("Profile 1", "Profile 2", "Profile 3")
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        AccessProfileButton("Profile 1")
-        AccessProfileButton("Profile 2")
+        ProfileListButtons(profiles)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         AddProfileButton()
 
     }
 
+}
+
+@Composable
+fun ProfileListButtons(profiles: List<String>) {
+    Column(
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        profiles.forEach { profile ->
+            AccessProfileButton(profile)
+        }
+    }
 }
 
 @Composable
