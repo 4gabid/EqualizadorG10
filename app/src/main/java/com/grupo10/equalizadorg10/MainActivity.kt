@@ -1,5 +1,6 @@
 package com.grupo10.equalizadorg10
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,10 +61,23 @@ fun EqualizadorMainScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("profile_prefs", Context.MODE_PRIVATE)
+    val savedProfileName = sharedPreferences.getString("profile_name", "Default Profile")
+    val savedVolume = sharedPreferences.getFloat("volume", 0.5f)
+    val savedBass = sharedPreferences.getFloat("bass", 0.5f)
+    val savedMiddle = sharedPreferences.getFloat("middle", 0.5f)
+    val savedTreble = sharedPreferences.getFloat("treble", 0.5f)
+
     Column(
-        modifier = modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Image(
             painter = painterResource(R.drawable.audio_waves),
             contentDescription = "Audio waves icon",
@@ -81,9 +96,25 @@ fun EqualizadorMainScreen(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
-        val profiles = listOf("Profile 1", "Profile 2", "Profile 3")
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "$savedProfileName",
+            fontSize = 15.sp,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(text = "Volume: ${(savedVolume * 100).toInt()}%", fontSize = 12.sp)
+        Text(text = "Bass: ${(savedBass * 100 - 50).toInt()} dB", fontSize = 12.sp)
+        Text(text = "Middle: ${(savedMiddle * 100 - 50).toInt()} dB", fontSize = 12.sp)
+        Text(text = "Treble: ${(savedTreble * 100 - 50).toInt()} dB", fontSize = 12.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Exibe os botões para navegar ou criar novos perfis
+        val profiles = listOf("Profile 1", "Profile 2", "Profile 3")
 
         ProfileListButtons(profiles) { profileName ->
             navController.navigate("profile_screen/$profileName")
@@ -96,6 +127,7 @@ fun EqualizadorMainScreen(
         }
     }
 }
+
 
 @Composable
 fun ProfileListButtons(profiles: List<String>, onProfileClick: (String) -> Unit) {

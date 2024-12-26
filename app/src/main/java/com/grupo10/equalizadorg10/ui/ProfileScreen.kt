@@ -53,71 +53,18 @@ import androidx.navigation.compose.rememberNavController
 import com.grupo10.equalizadorg10.EqualizadorMainScreen
 
 @Composable
-fun VolumeSlider() {
-    var volumeSliderValue by remember { mutableStateOf(0.5f) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top, // Alinha os itens no topo
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "Volume")
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "min")
-            Text(text = "max")
-        }
-        Slider(
-            value = volumeSliderValue,
-            onValueChange = { newValue -> volumeSliderValue = newValue },
-            valueRange = 0f..1f,
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-fun FrequenciaSlider(faixa: String) {
-    var sliderValue by remember { mutableStateOf(0.5f) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth() // Garante que cada slider ocupe toda a largura disponível
-            .padding(5.dp),
-        verticalArrangement = Arrangement.Top, // Alinha os itens no topo
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = faixa)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "-10 dB")
-            Text(text = "+10 dB")
-        }
-        Slider(
-            value = sliderValue,
-            onValueChange = { newValue -> sliderValue = newValue },
-            valueRange = 0f..1f,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp)) // Adiciona espaço entre os sliders
-    }
-}
-
-
-
-@Composable
-fun ProfileScreen(profileName: String, navController: NavController, modifier: Modifier = Modifier ) {
+fun ProfileScreen(profileName: String, navController: NavController, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val sharedPreferences = remember {
         context.getSharedPreferences("profile_prefs", Context.MODE_PRIVATE)
     }
     var editableName by remember { mutableStateOf(profileName) }
+
+    // Sliders
+    var volumeSliderValue by remember { mutableStateOf(sharedPreferences.getFloat("volume", 0.5f)) }
+    var bassSliderValue by remember { mutableStateOf(sharedPreferences.getFloat("bass", 0.5f)) }
+    var middleSliderValue by remember { mutableStateOf(sharedPreferences.getFloat("middle", 0.5f)) }
+    var trebleSliderValue by remember { mutableStateOf(sharedPreferences.getFloat("treble", 0.5f)) }
 
     Column(
         modifier = modifier
@@ -137,34 +84,80 @@ fun ProfileScreen(profileName: String, navController: NavController, modifier: M
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-        VolumeSlider()
-        FrequenciaSlider(faixa = "Bass")
-        FrequenciaSlider(faixa = "Middle")
-        FrequenciaSlider(faixa = "Treble")
+        // Volume Slider
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Volume")
+            Slider(
+                value = volumeSliderValue,
+                onValueChange = { volumeSliderValue = it },
+                valueRange = 0f..1f,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        // Bass Slider
+        FrequenciaSlider("Bass", bassSliderValue) { bassSliderValue = it }
+
+        // Middle Slider
+        FrequenciaSlider("Middle", middleSliderValue) { middleSliderValue = it }
+
+        // Treble Slider
+        FrequenciaSlider("Treble", trebleSliderValue) { trebleSliderValue = it }
+
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Save changes button
         FilledTonalButton(
             onClick = {
-
                 sharedPreferences.edit()
                     .putString("profile_name", editableName)
+                    .putFloat("volume", volumeSliderValue)
+                    .putFloat("bass", bassSliderValue)
+                    .putFloat("middle", middleSliderValue)
+                    .putFloat("treble", trebleSliderValue)
                     .apply()
             }
         ) {
             Text(text = "Save changes")
         }
 
+        // Back to main screen button
         ElevatedButton(
             onClick = {
                 navController.navigate("main_screen") {
-                    popUpTo("main_screen") { inclusive = true } // Remove a tela atual da pilha de navegação
+                    popUpTo("main_screen") { inclusive = true }
                 }
             }
         ) {
-            Text(text = "Choose other profile")
+            Text(text = "Choose another profile")
+        }
     }
-}}
+}
+
+@Composable
+fun FrequenciaSlider(faixa: String, value: Float, onValueChange: (Float) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = faixa)
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = 0f..1f,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
 
 
 
