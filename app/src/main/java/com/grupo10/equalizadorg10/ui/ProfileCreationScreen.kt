@@ -4,6 +4,8 @@ import ProfileRepository
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,7 +37,6 @@ fun ProfileCreationScreen(
     val context = LocalContext.current
     val profileRepository = ProfileRepository(context)
 
-
     val createProfile: () -> Unit = {
         val newProfile = Profile(
             name = newProfileName,
@@ -46,9 +47,9 @@ fun ProfileCreationScreen(
         )
 
         CoroutineScope(Dispatchers.Main).launch {
-            profileRepository.insert(newProfile)
-            onProfileCreated(newProfile)
-            navController.popBackStack()
+            profileRepository.insert(newProfile) // Insere o perfil no banco de dados
+            onProfileCreated(newProfile) // Atualiza a lista na tela principal
+            navController.popBackStack() // Volta para a tela principal
         }
     }
 
@@ -59,43 +60,53 @@ fun ProfileCreationScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(
+                onClick = { navController.popBackStack() },
+            ) {
+                Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
+            }
+        }
+
         TextField(
             value = newProfileName,
             onValueChange = { newProfileName = it },
             label = { Text("Profile Name") }
         )
 
-
         VolumeSlider(
             value = newProfileVolume,
-            onValueChange = { newProfileVolume= it },
+            onValueChange = { newProfileVolume = it },
             label = "Volume"
         )
 
         FrequenciaSlider(
             value = newProfileBass,
-            onValueChange = { newProfileBass= it},
+            onValueChange = { newProfileBass = it },
             label = "Bass",
         )
 
         FrequenciaSlider(
             value = newProfileMiddle,
-            onValueChange = { newProfileMiddle=it },
+            onValueChange = { newProfileMiddle = it },
             label = "Middle",
         )
 
         FrequenciaSlider(
             value = newProfileTreble,
-            onValueChange = { newProfileTreble = it},
+            onValueChange = { newProfileTreble = it },
             label = "Treble",
         )
-
 
         Button(onClick = createProfile) {
             Text("Create Profile")
         }
     }
 }
+
 
 
 

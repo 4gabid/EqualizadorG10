@@ -44,4 +44,11 @@ class ProfileRepository(private val context: Context) {
             profileDao.setLastUsed(profileId)
         }
     }
+
+
+    suspend fun deleteAllProfiles() {
+        withContext(Dispatchers.IO) {
+            profileDao.deleteAllProfiles()
+        }
+    }
 }

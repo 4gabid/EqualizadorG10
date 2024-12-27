@@ -14,4 +14,5 @@ data class Profile(
     var treble: Float,
     @ColumnInfo(name = "isLastUsed")
     val isLastUsed: Boolean = false
+
 )
