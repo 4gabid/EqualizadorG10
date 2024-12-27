@@ -1,14 +1,17 @@
 package com.grupo10.equalizadorg10
 
+import ProfileRepository
 import android.content.Context
 import android.os.Bundle
+import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -18,39 +21,138 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.grupo10.equalizadorg10.ui.ProfileScreen
+import androidx.navigation.compose.*
+import com.grupo10.equalizadorg10.data.AppDatabase
+import com.grupo10.equalizadorg10.data.Profile
+import com.grupo10.equalizadorg10.data.ProfileDao
+import kotlinx.coroutines.CoroutineScope
+import com.grupo10.equalizadorg10.ui.ProfileCreationScreen
+import com.grupo10.equalizadorg10.ui.ProfileEditScreen
 import com.grupo10.equalizadorg10.ui.theme.EqualizadorG10Theme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var profileRepository: ProfileRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        profileRepository = ProfileRepository(applicationContext)
+
         setContent {
-            EqualizadorApp()
+            EqualizadorApp(profileRepository)
         }
     }
 }
 
-@Composable
-fun EqualizadorApp() {
-    val navController = rememberNavController()
+// ProfileRepository movido para fora do EqualizadorMainScreen
+class ProfileRepository(private val context: Context) {
+    private val profileDao: ProfileDao = AppDatabase.getDatabase(context).profileDao()
 
-    NavHost(
-        navController = navController,
-        startDestination = "main_screen"
-    ) {
-        composable("main_screen") {
-            EqualizadorMainScreen(navController = navController)
+    suspend fun getAllProfiles(): List<Profile> {
+        val profiles = profileDao.getAllProfiles()
+        if (profiles.isEmpty()) {
+            val defaultProfile = Profile(
+                name = "Default",
+                volume = 0.5f,
+                bass = 0.5f,
+                middle = 0.5f,
+                treble = 0.5f
+            )
+            insert(defaultProfile)  // Cria o perfil default
         }
-        composable("profile_screen/{profileName}") { backStackEntry ->
-            val profileName = backStackEntry.arguments?.getString("profileName") ?: "Unknown"
-            ProfileScreen(
-                profileName,
+        return profileDao.getAllProfiles()
+    }
+
+    suspend fun insert(profile: Profile) {
+        profileDao.insert(profile)
+    }
+
+    suspend fun update(profile: Profile) {
+        profileDao.update(profile)
+    }
+
+    suspend fun getLastUsedProfile(): Profile? {
+        return profileDao.getLastUsedProfile()
+    }
+}
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun EqualizadorApp(profileRepository: ProfileRepository) {
+    val navController = rememberNavController()
+    var profiles by remember { mutableStateOf(listOf<Profile>()) }
+    var currentProfile by remember { mutableStateOf<Profile?>(null) }
+
+    LaunchedEffect(Unit) {
+        if (profileRepository.getAllProfiles().isEmpty()) {
+            val defaultProfile = Profile(
+                name = "Default Profile",
+                volume = 0.5f,
+                bass = 0.5f,
+                middle = 0.5f,
+                treble = 0.5f,
+                isLastUsed = true
+            )
+            profileRepository.insert(defaultProfile)
+        }
+
+        profiles = profileRepository.getAllProfiles()
+        currentProfile = profileRepository.getLastUsedProfile() ?: profiles.firstOrNull()
+    }
+
+    NavHost(navController = navController, startDestination = "main_screen") {
+        composable("main_screen") {
+            EqualizadorMainScreen(
                 navController = navController,
-                modifier = Modifier
+                profiles = profiles.map { it.name },
+                onProfileUpdated = { updatedProfile ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        profileRepository.update(updatedProfile)
+                        profiles = profiles.map {
+                            if (it.id == updatedProfile.id) updatedProfile else it
+                        }
+                        currentProfile = updatedProfile
+                    }
+                },
+                profileRepository = profileRepository
+            )
+        }
+
+        composable("profile_screen/{profileId}") { backStackEntry ->
+            val profileId = backStackEntry.arguments?.getString("profileId")?.toInt() ?: 0
+            val profile = profiles.firstOrNull { it.id == profileId }
+                ?: Profile(
+                    id = 0, name = "Unknown", volume = 0.5f, bass = 0.5f, middle = 0.5f, treble = 0.5f
+                )
+
+            ProfileEditScreen(
+                navController = navController,
+                profile = profile,
+                onProfileUpdated = { updatedProfile ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        profileRepository.update(updatedProfile)
+                        profiles = profiles.map {
+                            if (it.id == updatedProfile.id) updatedProfile else it
+                        }
+                        navController.popBackStack()
+                    }
+                }
+            )
+        }
+
+        composable("profile_screen/new_profile") {
+            ProfileCreationScreen(
+                navController = navController,
+                onProfileCreated = { newProfile ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        profileRepository.insert(newProfile)
+                        profiles = profileRepository.getAllProfiles() // Atualiza a lista de perfis
+                        navController.navigate("main_screen")
+                    }
+                }
             )
         }
     }
@@ -59,16 +161,19 @@ fun EqualizadorApp() {
 @Composable
 fun EqualizadorMainScreen(
     navController: NavController,
+    profiles: List<String>,
+    onProfileUpdated: (Profile) -> Unit,
+    profileRepository: ProfileRepository,
     modifier: Modifier = Modifier
 ) {
-
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("profile_prefs", Context.MODE_PRIVATE)
-    val savedProfileName = sharedPreferences.getString("profile_name", "Default Profile")
-    val savedVolume = sharedPreferences.getFloat("volume", 0.5f)
-    val savedBass = sharedPreferences.getFloat("bass", 0.5f)
-    val savedMiddle = sharedPreferences.getFloat("middle", 0.5f)
-    val savedTreble = sharedPreferences.getFloat("treble", 0.5f)
+    var profileList by remember { mutableStateOf(listOf<Profile>()) }
+
+    LaunchedEffect(Unit) {
+        profileList = profileRepository.getAllProfiles()
+    }
+
+    val currentProfile = profileList.firstOrNull { it.isLastUsed }
 
     Column(
         modifier = modifier
@@ -77,60 +182,70 @@ fun EqualizadorMainScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(R.drawable.audio_waves),
+                contentDescription = "Audio waves icon",
+                modifier = Modifier.size(100.dp)
+            )
+            Text(
+                text = "G10",
+                fontSize = 55.sp,
+                fontFamily = FontFamily.SansSerif,
+                modifier = Modifier.padding(5.dp).align(Alignment.CenterHorizontally)
+            )
+            Text(
+                text = "Equalizador",
+                fontSize = 20.sp,
+                fontFamily = FontFamily.SansSerif,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = currentProfile?.name ?: "No profile selected",
+                fontSize = 15.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            currentProfile?.let {
+//                Text(text = it.name, fontSize = 15.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = "Volume: ${(it.volume * 100).toInt()}%", fontSize = 12.sp)
+                Text(text = "Bass: ${(it.bass * 100 - 50).toInt()} dB", fontSize = 12.sp)
+                Text(text = "Middle: ${(it.middle * 100 - 50).toInt()} dB", fontSize = 12.sp)
+                Text(text = "Treble: ${(it.treble * 100 - 50).toInt()} dB", fontSize = 12.sp)
+            }
 
-        Image(
-            painter = painterResource(R.drawable.audio_waves),
-            contentDescription = "Audio waves icon",
-            modifier = Modifier.size(100.dp)
-        )
-        Text(
-            text = "G10",
-            fontSize = 55.sp,
-            fontFamily = FontFamily.SansSerif,
-            modifier = Modifier.padding(5.dp).align(Alignment.CenterHorizontally)
-        )
-        Text(
-            text = "Equalizador",
-            fontSize = 20.sp,
-            fontFamily = FontFamily.SansSerif,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
+            ProfileListButtons(profiles = profileList) { selectedProfile ->
+                onProfileUpdated(selectedProfile)
+                navController.navigate("profile_screen/${selectedProfile.id}")
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            FilledTonalButton(onClick = { navController.navigate("profile_screen/new_profile") }) {
+                Text(text = "Add new profile")
 
-        Spacer(modifier = Modifier.height(8.dp))
+        }
 
-        Text(
-            text = "$savedProfileName",
-            fontSize = 15.sp,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(text = "Volume: ${(savedVolume * 100).toInt()}%", fontSize = 12.sp)
-        Text(text = "Bass: ${(savedBass * 100 - 50).toInt()} dB", fontSize = 12.sp)
-        Text(text = "Middle: ${(savedMiddle * 100 - 50).toInt()} dB", fontSize = 12.sp)
-        Text(text = "Treble: ${(savedTreble * 100 - 50).toInt()} dB", fontSize = 12.sp)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Exibe os botões para navegar ou criar novos perfis
-        val profiles = listOf("Profile 1", "Profile 2", "Profile 3")
-
-        ProfileListButtons(profiles) { profileName ->
-            navController.navigate("profile_screen/$profileName")
         }
 
         Spacer(modifier = Modifier.height(10.dp))
-
-        FilledTonalButton(onClick = { navController.navigate("profile_screen/New Profile") }) {
+        FilledTonalButton(onClick = { navController.navigate("profile_screen/new_profile") }) {
             Text(text = "Add new profile")
         }
     }
 }
 
 
+
 @Composable
-fun ProfileListButtons(profiles: List<String>, onProfileClick: (String) -> Unit) {
+fun ProfileListButtons(profiles: List<Profile>, onProfileClick: (Profile) -> Unit) {
     Column(
         modifier = Modifier
             .wrapContentSize()
@@ -139,25 +254,21 @@ fun ProfileListButtons(profiles: List<String>, onProfileClick: (String) -> Unit)
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         profiles.forEach { profile ->
-            AccessProfileButton(profile) {
+            AccessProfileButton(profile = profile) {
                 onProfileClick(profile)
             }
         }
     }
 }
 
+
+
 @Composable
-private fun AccessProfileButton(profileName: String, onClick: () -> Unit) {
+fun AccessProfileButton(profile: Profile, onClick: () -> Unit) {
     ElevatedButton(onClick = onClick, modifier = Modifier.padding(8.dp)) {
-        Text(text = profileName)
+        Text(text = profile.name)
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewEqualizadorMainScreen() {
-    EqualizadorG10Theme {
-        val dummyNavController = rememberNavController()
-        EqualizadorMainScreen(navController = dummyNavController)
-    }
-}
+
+
