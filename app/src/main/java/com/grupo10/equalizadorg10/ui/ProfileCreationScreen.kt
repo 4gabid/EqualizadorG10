@@ -65,11 +65,29 @@ fun ProfileCreationScreen(
             label = { Text("Profile Name") }
         )
 
-        Slider(
+
+        VolumeSlider(
             value = newProfileVolume,
-            onValueChange = { newProfileVolume = it },
-            valueRange = 0f..1f,
-            steps = 10
+            onValueChange = { newProfileVolume= it },
+            label = "Volume"
+        )
+
+        FrequenciaSlider(
+            value = newProfileBass,
+            onValueChange = { newProfileBass= it},
+            label = "Bass",
+        )
+
+        FrequenciaSlider(
+            value = newProfileMiddle,
+            onValueChange = { newProfileMiddle=it },
+            label = "Middle",
+        )
+
+        FrequenciaSlider(
+            value = newProfileTreble,
+            onValueChange = { newProfileTreble = it},
+            label = "Treble",
         )
 
 

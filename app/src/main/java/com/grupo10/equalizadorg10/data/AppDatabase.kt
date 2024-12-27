@@ -19,7 +19,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "equalizer_database"
-                ).fallbackToDestructiveMigration() // Essa linha permite recriar o banco ao atualizar a versão
+                ).fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

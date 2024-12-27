@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.grupo10.equalizadorg10.commom.FrequenciaSlider
+import com.grupo10.equalizadorg10.commom.SliderImplementation
 import com.grupo10.equalizadorg10.commom.VolumeSlider
 import com.grupo10.equalizadorg10.data.Profile
 
@@ -52,50 +53,37 @@ fun ProfileEditScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Editar nome do perfil
         TextField(
             value = updatedProfile.name,
             onValueChange = { updatedProfile = updatedProfile.copy(name = it) },
             label = { Text("Profile Name") }
         )
 
-        // Slider para volume
-        Text("Volume")
-        Slider(
+
+        VolumeSlider(
             value = updatedProfile.volume,
             onValueChange = { updatedProfile = updatedProfile.copy(volume = it) },
-            valueRange = 0f..1f,
-            steps = 10
+            label = "Volume"
         )
 
-        // Slider para bass
-        Text("Bass")
-        Slider(
+        FrequenciaSlider(
             value = updatedProfile.bass,
-            onValueChange = { updatedProfile = updatedProfile.copy(bass = it) },
-            valueRange = 0f..1f,
-            steps = 10
+            onValueChange = { updatedProfile = updatedProfile.copy(bass= it) },
+            label = "Bass",
         )
 
-        // Slider para middle
-        Text("Middle")
-        Slider(
+        FrequenciaSlider(
             value = updatedProfile.middle,
             onValueChange = { updatedProfile = updatedProfile.copy(middle = it) },
-            valueRange = 0f..1f,
-            steps = 10
+            label = "Middle",
         )
 
-        // Slider para treble
-        Text("Treble")
-        Slider(
+        FrequenciaSlider(
             value = updatedProfile.treble,
             onValueChange = { updatedProfile = updatedProfile.copy(treble = it) },
-            valueRange = 0f..1f,
-            steps = 10
+            label = "Treble",
         )
 
-        // Botão para salvar as alterações
         Button(onClick = saveProfileChanges) {
             Text("Save Changes")
         }

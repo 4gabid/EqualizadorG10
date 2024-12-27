@@ -30,6 +30,8 @@ fun FrequenciaSlider(
         onValueChange = onValueChange,
         minValueLabel = "-12 dB",
         maxValueLabel = "+12 dB",
+        valueMin = 0f,
+        valueMax= 25f,
     )
 
 }
@@ -45,8 +47,10 @@ fun VolumeSlider(
         label = label,
         value = value,
         onValueChange = onValueChange,
-        minValueLabel = "0",
-        maxValueLabel = "100",
+        minValueLabel = "min",
+        maxValueLabel = "max",
+        valueMin = 0f,
+        valueMax = 20f
     )
 
 }
@@ -56,7 +60,9 @@ fun SliderImplementation(
     value: Float,
     onValueChange: (Float) -> Unit,
     minValueLabel: String = "Min",
-    maxValueLabel: String = "Max"
+    maxValueLabel: String = "Max",
+    valueMin: Float,
+    valueMax: Float
 ) {
     Column(
         modifier = Modifier
@@ -74,8 +80,9 @@ fun SliderImplementation(
             Slider(
                 value = value,
                 onValueChange = onValueChange,
-                valueRange = 0f..1f,
-                modifier = Modifier.weight(1f)
+                valueRange = valueMin..valueMax,
+                modifier = Modifier.weight(1f),
+                steps = 25
             )
             Text(text = maxValueLabel, fontSize = 12.sp, color = Color.Gray)
         }
