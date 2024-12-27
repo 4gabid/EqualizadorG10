@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Profile::class], version = 1, exportSchema = false)
+@Database(entities = [Profile::class], version = 2, exportSchema = false) // Versão 2
 abstract class AppDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
 
@@ -19,7 +19,8 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "equalizer_database"
-                ).build()
+                ).fallbackToDestructiveMigration() // Essa linha permite recriar o banco ao atualizar a versão
+                    .build()
                 INSTANCE = instance
                 instance
             }
