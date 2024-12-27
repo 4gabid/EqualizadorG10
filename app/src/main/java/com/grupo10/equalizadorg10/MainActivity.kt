@@ -9,11 +9,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -47,7 +51,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// ProfileRepository movido para fora do EqualizadorMainScreen
+
 class ProfileRepository(private val context: Context) {
     private val profileDao: ProfileDao = AppDatabase.getDatabase(context).profileDao()
 
@@ -175,69 +179,69 @@ fun EqualizadorMainScreen(
 
     val currentProfile = profileList.firstOrNull { it.isLastUsed }
 
-    Column(
+
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(8.dp), // Spacing between items
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        item {
             Image(
                 painter = painterResource(R.drawable.audio_waves),
                 contentDescription = "Audio waves icon",
                 modifier = Modifier.size(100.dp)
             )
+        }
+        item {
             Text(
                 text = "G10",
                 fontSize = 55.sp,
                 fontFamily = FontFamily.SansSerif,
-                modifier = Modifier.padding(5.dp).align(Alignment.CenterHorizontally)
+                modifier = Modifier.padding(5.dp)
             )
+        }
+        item {
             Text(
                 text = "Equalizador",
                 fontSize = 20.sp,
                 fontFamily = FontFamily.SansSerif,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier
             )
-            Spacer(modifier = Modifier.height(8.dp))
+        }
+        item {
             Text(
                 text = currentProfile?.name ?: "No profile selected",
                 fontSize = 15.sp,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            currentProfile?.let {
-//                Text(text = it.name, fontSize = 15.sp)
+        }
+
+        currentProfile?.let {
+            item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Volume: ${(it.volume * 100).toInt()}%", fontSize = 12.sp)
                 Text(text = "Bass: ${(it.bass * 100 - 50).toInt()} dB", fontSize = 12.sp)
                 Text(text = "Middle: ${(it.middle * 100 - 50).toInt()} dB", fontSize = 12.sp)
                 Text(text = "Treble: ${(it.treble * 100 - 50).toInt()} dB", fontSize = 12.sp)
             }
+        }
 
+        // Display profile list buttons
+        item {
             ProfileListButtons(profiles = profileList) { selectedProfile ->
                 onProfileUpdated(selectedProfile)
                 navController.navigate("profile_screen/${selectedProfile.id}")
             }
+        }
+
+        // Add a new profile button at the bottom
+        item {
             Spacer(modifier = Modifier.height(10.dp))
             FilledTonalButton(onClick = { navController.navigate("profile_screen/new_profile") }) {
                 Text(text = "Add new profile")
-
-        }
-
-
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-        FilledTonalButton(onClick = { navController.navigate("profile_screen/new_profile") }) {
-            Text(text = "Add new profile")
+            }
         }
     }
 }
