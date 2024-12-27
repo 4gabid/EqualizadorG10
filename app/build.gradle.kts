@@ -41,7 +41,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -90,4 +89,5 @@ dependencies {
         ksp("androidx.room:room-compiler:2.5.0")
     }
 
+    testImplementation("org.robolectric:robolectric:4.10.3")
 }
