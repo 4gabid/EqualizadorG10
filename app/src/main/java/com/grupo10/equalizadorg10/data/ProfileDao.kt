@@ -27,5 +27,9 @@ interface ProfileDao {
 
     @Query("UPDATE profiles SET isLastUsed = 1 WHERE id = :profileId")
     suspend fun setLastUsed(profileId: Int)
+
+    @Query("DELETE FROM profiles")
+    suspend fun deleteAllProfiles()
+
 }
 

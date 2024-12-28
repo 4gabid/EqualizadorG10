@@ -1,5 +1,6 @@
 package com.grupo10.equalizadorg10.ui
 
+
 import ProfileRepository
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,10 +17,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.grupo10.equalizadorg10.commom.FrequenciaSlider
-import com.grupo10.equalizadorg10.commom.SliderImplementation
 import com.grupo10.equalizadorg10.commom.VolumeSlider
 import com.grupo10.equalizadorg10.data.Profile
-
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,13 +35,16 @@ fun ProfileEditScreen(
     val context = LocalContext.current
     val profileRepository = ProfileRepository(context)
 
-    // Função para salvar as alterações no banco de dados
     val saveProfileChanges: () -> Unit = {
-        // Aqui estamos usando uma coroutine para chamar a função suspensa 'update'
         CoroutineScope(Dispatchers.Main).launch {
-            profileRepository.update(updatedProfile)  // Atualiza no banco de dados
-            onProfileUpdated(updatedProfile)  // Atualiza na tela principal
-            navController.popBackStack()  // Voltar à tela anterior após salvar
+
+            profileRepository.update(updatedProfile)
+
+            profileRepository.setLastUsedProfile(updatedProfile.id)
+
+            onProfileUpdated(updatedProfile)
+
+            //navController.popBackStack()
         }
     }
 
@@ -53,12 +55,22 @@ fun ProfileEditScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(
+                onClick = { navController.popBackStack() },
+            ) {
+                Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
+            }
+        }
         TextField(
             value = updatedProfile.name,
             onValueChange = { updatedProfile = updatedProfile.copy(name = it) },
             label = { Text("Profile Name") }
         )
-
 
         VolumeSlider(
             value = updatedProfile.volume,
@@ -68,7 +80,7 @@ fun ProfileEditScreen(
 
         FrequenciaSlider(
             value = updatedProfile.bass,
-            onValueChange = { updatedProfile = updatedProfile.copy(bass= it) },
+            onValueChange = { updatedProfile = updatedProfile.copy(bass = it) },
             label = "Bass",
         )
 
@@ -108,7 +120,6 @@ fun PreviewProfileEditScreen() {
         profile = profile,
         modifier = Modifier,
         onProfileUpdated = { updatedProfile ->
-
             println("Perfil atualizado para: ${updatedProfile.name}")
         },
     )

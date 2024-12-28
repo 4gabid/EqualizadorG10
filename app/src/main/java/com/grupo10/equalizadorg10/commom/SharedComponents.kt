@@ -31,7 +31,7 @@ fun FrequenciaSlider(
         minValueLabel = "-12 dB",
         maxValueLabel = "+12 dB",
         valueMin = 0f,
-        valueMax= 25f,
+        valueMax= 24f,
     )
 
 }
@@ -82,7 +82,7 @@ fun SliderImplementation(
                 onValueChange = onValueChange,
                 valueRange = valueMin..valueMax,
                 modifier = Modifier.weight(1f),
-                steps = 25
+                steps = 24
             )
             Text(text = maxValueLabel, fontSize = 12.sp, color = Color.Gray)
         }
