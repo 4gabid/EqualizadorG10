@@ -18,6 +18,8 @@ Aplicativo desenvolvido com fins didáticos para a disciplina de Programação O
 
 ### 🔗 **Link do Relatório**:  
 [EqualizadorG10](https://docs.google.com/document/d/1dLIZw0VFx4nBrbnpdEWO33doatcVhlDvflYxU_AtVnY/edit?usp=sharing)
+### **Video demonstrando funcionamento**
+[Video funcionamento](https://drive.google.com/file/d/1WkN8bYcdOxawgPqGwuzFRZEmsZ-vzzzF/view?usp=sharing)
 
 ---
 
