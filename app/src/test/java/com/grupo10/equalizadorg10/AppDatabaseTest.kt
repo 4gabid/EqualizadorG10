@@ -38,9 +38,9 @@ class AppDatabaseTest {
             id = 1,
             name = "Rock",
             volume = 80f,
-            bass = 70f,
-            middle = 60f,
-            treble = 50f,
+            bass = 0f,
+            middle = 5f,
+            treble = -8f,
             isLastUsed = false
         )
         profileDao.insert(profile)
@@ -51,8 +51,8 @@ class AppDatabaseTest {
     @Test
     fun testGetAllProfiles() = runBlocking {
         val profiles = listOf(
-            Profile(1, "Rock", 80f, 70f, 60f, 50f, false),
-            Profile(2, "Jazz", 70f, 60f, 80f, 70f, false)
+            Profile(1, "Rock", 80f, 7f, 6f, 5f, false),
+            Profile(2, "Jazz", 70f, -6f, -8f, 7f, false)
         )
         profiles.forEach { profileDao.insert(it) }
         val retrievedProfiles = profileDao.getAllProfiles()
@@ -62,7 +62,7 @@ class AppDatabaseTest {
 
     @Test
     fun testSetAndClearLastUsedProfile() = runBlocking {
-        val profile = Profile(1, "Rock", 80f, 70f, 60f, 50f, false)
+        val profile = Profile(1, "Rock", 8f, 7f, 6f, 5f, false)
         profileDao.insert(profile)
         profileDao.setLastUsed(1)
         val lastUsedProfile = profileDao.getLastUsedProfile()
@@ -75,7 +75,7 @@ class AppDatabaseTest {
 
     @Test
     fun testUpdateProfile() = runBlocking {
-        val profile = Profile(1, "Rock", 80f, 70f, 60f, 50f, false)
+        val profile = Profile(1, "Rock", 80f, -7f, 6f, 5f, false)
         profileDao.insert(profile)
         val updatedProfile = profile.copy(volume = 90f)
         profileDao.update(updatedProfile)
